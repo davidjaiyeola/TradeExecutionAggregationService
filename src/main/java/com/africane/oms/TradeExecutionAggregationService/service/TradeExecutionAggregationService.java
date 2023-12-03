@@ -60,6 +60,10 @@ public class TradeExecutionAggregationService {
         props.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, 0);
         props.put(StreamsConfig.DEFAULT_DESERIALIZATION_EXCEPTION_HANDLER_CLASS_CONFIG, LogAndContinueExceptionHandler.class);
         props.put(StreamsConfig.STATE_DIR_CONFIG, "/tmp/kafka-streams/");
+        props.put(StreamsConfig.TOPOLOGY_OPTIMIZATION, StreamsConfig.OPTIMIZE);
+        props.put(StreamsConfig.REPLICATION_FACTOR_CONFIG, 1);
+        props.put(StreamsConfig.NUM_STANDBY_REPLICAS_CONFIG, 1);
+        props.put(StreamsConfig.MAX_WARMUP_REPLICAS_CONFIG, 1);
         return new KafkaStreamsConfiguration(props);
     }
 
@@ -123,8 +127,6 @@ public class TradeExecutionAggregationService {
                                 Materialized.with(Serdes.UUID(), tradeExecutionAggregationEventJsonSerde)
                         )
                         .toStream();
-                        // Finally we check that our order is completed with validations before we send it to the output topic.
-                        //.filter((key, order) -> order.isComplete(NUMBER_OF_RULES));
 
         tradeExecutionAggregationEventKStream.peek((k, o) -> log.info("Aggregated Executions: {} {}", k, o)).to("oms.equity.order.aggregated-executed-quantity", tradeExecutionAggregationEventProduced);
 
