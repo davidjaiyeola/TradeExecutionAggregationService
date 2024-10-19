@@ -15,6 +15,7 @@ import org.apache.kafka.streams.state.Stores;
 import org.apache.kafka.streams.state.WindowStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.config.KafkaStreamsConfiguration;
 import org.springframework.kafka.config.StreamsBuilderFactoryBean;
@@ -30,7 +31,10 @@ import java.util.UUID;
 public class TradeExecutionAggregationService {
 
     private static final Logger log = LoggerFactory.getLogger(TradeExecutionAggregationService.class);
-
+    @Value("${spring.kafka.bootstrap-servers}")
+    private String bootstrapServers;
+    @Value("${spring.kafka.streams.application-id}")
+    private String applicationId;
     private final Serde<Long> longSerde = Serdes.Long();
     private final Serde<UUID> uuidSerde = Serdes.UUID();
     Serde<TradeExecutionEvent> tradeExecutionEventJsonSerde = new JsonSerde<>( TradeExecutionEvent.class );
@@ -53,8 +57,8 @@ public class TradeExecutionAggregationService {
 
     public KafkaStreamsConfiguration streamsConfig() {
         Map<String, Object> props = new HashMap<>();
-        props.put(StreamsConfig.APPLICATION_ID_CONFIG, "TradeExecutionAggregationService");
-        props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "127.0.0.1:29092");
+        props.put(StreamsConfig.APPLICATION_ID_CONFIG, applicationId);
+        props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, "org.apache.kafka.common.serialization.Serdes$UUIDSerde");
         props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, "org.springframework.kafka.support.serializer.JsonSerde");
         props.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, 0);

@@ -1,0 +1,28 @@
+FROM eclipse-temurin:21-alpine
+LABEL maintainer="David Jaiyeola<david.jaiyeola@gmail.com>"
+# Add the service itself
+#ARG JAR_FILE
+ADD target/TradeExecutionAggregationService-0.0.1-SNAPSHOT.jar /usr/share/app/TradeExecutionAggregationService-0.0.1-SNAPSHOT.jar
+ENV JAVA_OPTS=""
+ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -jar /usr/share/app/TradeExecutionAggregationService-0.0.1-SNAPSHOT.jar" ]
+
+
+## build stage
+#FROM observabilitystack/graalvm-maven-builder:21.0.1-ol9 AS builder
+#
+#COPY . /home/app
+#WORKDIR /home/app
+#
+#
+#RUN mvn install:install-file \
+#     -Dfile=lib/oms-events-commons-1.0-SNAPSHOT.jar \
+#     -DgroupId=com.africane.oms -DartifactId=oms-events-commons \
+#     -Dversion=1.0-SNAPSHOT -Dpackaging=jar
+#RUN mvn -B -X native:compile -P native \
+#     -DskipTests=true && \
+#    chmod +x /home/app/target/TradeExecutionAggregationService
+#
+## run stage
+#FROM debian:bookworm-slim
+#COPY --from=builder /home/app/target/TradeExecutionAggregationService app
+#ENTRYPOINT ["/app"]

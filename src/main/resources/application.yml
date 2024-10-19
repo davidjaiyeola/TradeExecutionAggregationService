@@ -3,13 +3,13 @@ spring:
     name: TradeExecutionAggregationService
   thread-executor: virtual
   kafka:
-    bootstrap-servers: '127.0.0.1:29092'
+    bootstrap-servers: '127.0.0.1:29092,127.0.0.1:29093,127.0.0.1:29094'
     producer:
       key-serializer: org.apache.kafka.common.serialization.UUIDSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
     streams:
       orders-topic: oms.equity.order
-      application-id: TradeExecutionAggregationService
+      application-id: TradeExecutionAggregationService3
       state-dir: /tmp/kafka-streams/
       properties:
         default.key.serde: org.apache.kafka.common.serialization.Serdes$UUIDSerde
