@@ -1,4 +1,4 @@
-package com.africane.oms.TradeExecutionAggregationService.config;
+package com.africane.oms.tradeexecutionaggregationservice.config;
 
 import org.apache.kafka.streams.errors.StreamsUncaughtExceptionHandler;
 import org.slf4j.Logger;

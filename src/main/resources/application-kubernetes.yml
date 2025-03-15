@@ -1,0 +1,11 @@
+spring:
+  boot:
+    admin:
+      client:
+        url: ${ADMIN_CLIENT}
+  kafka:
+    streams:
+      state-dir: ${STATE_DIR}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+server:
+  port: 8080

@@ -1,5 +1,4 @@
-FROM gcr.io/distroless/base
-EXPOSE 8074
-COPY TradeExecutionAggregationService-0.0.1-SNAPSHOT app
+FROM ubuntu:plucky
+EXPOSE 8080
+COPY target/TradeExecutionAggregationService app
 ENTRYPOINT ["/app"]
-

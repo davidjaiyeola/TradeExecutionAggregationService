@@ -1,0 +1,121 @@
+[
+  {
+    "type": "java.util.HashSet",
+    "name":"java.util.HashSet",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "queryAllPublicConstructors": true,
+    "queryAllPublicMethods": true,
+    "allDeclaredClasses": true,
+    "allPublicClasses": true,
+    "unsafeAllocated":true,
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true
+  },
+  {
+    "type": "java.util.ArrayList",
+    "name":"java.util.ArrayList",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "queryAllPublicConstructors": true,
+    "queryAllPublicMethods": true,
+    "allDeclaredClasses": true,
+    "allPublicClasses": true,
+    "unsafeAllocated":true,
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true
+  },
+  {
+    "name":"com.africane.oms.events.HistoricMarketDataEvent",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "unsafeAllocated":true
+  },
+  {
+    "name":"com.africane.oms.events.TransactionFeeDto",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "unsafeAllocated":true
+  },
+  {
+    "name": "org.springframework.kafka.support.serializer.JsonSerde",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "allDeclaredConstructors": true,
+    "unsafeAllocated":true
+  },
+  {
+    "name": "org.apache.kafka.common.serialization.Serdes$UUIDSerde",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "allDeclaredConstructors": true,
+    "unsafeAllocated":true
+  },
+  {
+    "name": "org.apache.kafka.common.serialization.Serde",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "allDeclaredConstructors": true,
+    "unsafeAllocated":true
+  },
+  {
+    "name": "org.apache.kafka.common.serialization.Serdes",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "allDeclaredConstructors": true,
+    "unsafeAllocated":true
+  },
+  {
+  "name": "org.apache.kafka.streams.errors.LogAndFailExceptionHandler",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "allDeclaredConstructors": true,
+  "unsafeAllocated":true
+  },
+  {
+    "name": "org.apache.kafka.streams.errors.LogAndContinueExceptionHandler",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "allDeclaredConstructors": true,
+    "unsafeAllocated":true
+  },
+  {
+    "name": "org.apache.kafka.streams.errors.DefaultProductionExceptionHandler",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "allDeclaredConstructors": true,
+    "unsafeAllocated":true
+  },
+  {
+    "name": "org.apache.kafka.streams.processor.FailOnInvalidTimestamp",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "allDeclaredConstructors": true,
+    "unsafeAllocated":true
+  },
+  {
+    "name": "org.apache.kafka.streams.processor.internals.DefaultKafkaClientSupplier",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "allDeclaredConstructors": true,
+    "unsafeAllocated":true
+  },
+  {
+    "name": "org.apache.kafka.streams.processor.internals.StreamsPartitionAssignor",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "allDeclaredConstructors": true,
+    "unsafeAllocated":true
+  },
+  {
+  "name": "org.apache.kafka.streams.processor.internals.StateDirectory$StateDirectoryProcessFile",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "allDeclaredConstructors": true,
+  "unsafeAllocated":true
+  }
+]

@@ -1,12 +1,9 @@
-package com.africane.oms.TradeExecutionAggregationService.service;
+package com.africane.oms.tradeexecutionaggregationservice.service;
 
-import com.africane.oms.events.EquityOrderExecutedQuantityEvent;
-import com.africane.oms.events.TradeExecutionAggregationEvent;
-import com.africane.oms.events.TradeExecutionEvent;
+import com.africane.oms.events.*;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.utils.Bytes;
-import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.errors.LogAndContinueExceptionHandler;
@@ -35,9 +32,11 @@ public class TradeExecutionAggregationService {
     private String bootstrapServers;
     @Value("${spring.kafka.streams.application-id}")
     private String applicationId;
+    @Value("${spring.kafka.streams.state-dir}")
+    private String streamStateDirectory;
     private final Serde<Long> longSerde = Serdes.Long();
     private final Serde<UUID> uuidSerde = Serdes.UUID();
-    Serde<TradeExecutionEvent> tradeExecutionEventJsonSerde = new JsonSerde<>( TradeExecutionEvent.class );
+    Serde<TradeExecutionWithFeesEvent> tradeExecutionWithFeesEventJsonSerde = new JsonSerde<>( TradeExecutionWithFeesEvent.class );
     Serde<EquityOrderExecutedQuantityEvent> equityOrderExecutedQuantityEventJsonSerde = new JsonSerde<>( EquityOrderExecutedQuantityEvent.class );
     Serde<TradeExecutionAggregationEvent> tradeExecutionAggregationEventJsonSerde = new JsonSerde<>( TradeExecutionAggregationEvent.class );
 
@@ -63,44 +62,12 @@ public class TradeExecutionAggregationService {
         props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, "org.springframework.kafka.support.serializer.JsonSerde");
         props.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, 0);
         props.put(StreamsConfig.DEFAULT_DESERIALIZATION_EXCEPTION_HANDLER_CLASS_CONFIG, LogAndContinueExceptionHandler.class);
-        props.put(StreamsConfig.STATE_DIR_CONFIG, "/tmp/kafka-streams/");
+        props.put(StreamsConfig.STATE_DIR_CONFIG, streamStateDirectory);
         props.put(StreamsConfig.TOPOLOGY_OPTIMIZATION, StreamsConfig.OPTIMIZE);
         props.put(StreamsConfig.REPLICATION_FACTOR_CONFIG, 1);
         props.put(StreamsConfig.NUM_STANDBY_REPLICAS_CONFIG, 1);
         props.put(StreamsConfig.MAX_WARMUP_REPLICAS_CONFIG, 1);
         return new KafkaStreamsConfiguration(props);
-    }
-
-    //@Bean
-    public KStream<UUID, EquityOrderExecutedQuantityEvent> tradeExecutionAggregation(StreamsBuilder builder) {
-        final KGroupedStream<UUID, TradeExecutionEvent> tradeExecutionEventKGroupedStream = builder
-                .stream("oms.equity.trade.executions", Consumed.with(Serdes.UUID(), tradeExecutionEventJsonSerde))
-                .selectKey((key, executionEvent) -> executionEvent.getId())
-                .repartition(Repartitioned.<UUID, TradeExecutionEvent>as(EXECUTIONS_BY_ORDER_ID_REKEY_TOPIC)
-                        .withKeySerde(uuidSerde)
-                        .withValueSerde(tradeExecutionEventJsonSerde))
-                .groupByKey();
-
-        /**
-         * We aggregate the executions in a time window and also the same time we make sure we suppress
-         * so that all records suppressed til window closes.
-         * Out incoming records are fixed-size window.
-         * Once we aggregate the records we use a materialized view that relies on a windowstore
-         * rather than kv store
-         */
-        KStream<UUID, EquityOrderExecutedQuantityEvent> kStream = tradeExecutionEventKGroupedStream
-                .windowedBy(TimeWindows.ofSizeWithNoGrace(windowDuration))
-                .aggregate(this::initialize,
-                        this::aggregateQuantity,
-                        materializedAsWindowStore(WINDOWED_QUANTITY_STORE_NAME, uuidSerde, longSerde))
-                .suppress(Suppressed.untilWindowCloses(Suppressed.BufferConfig.unbounded()).withName(WINDOWED_QUANTITY_SUPPRESS_NODE_NAME))
-                .toStream()
-                .map((key, aggregatedQuantity)-> KeyValue.pair(key.key(), new EquityOrderExecutedQuantityEvent(key.key(), aggregatedQuantity)));
-
-
-        kStream.peek((k, o) -> log.info("Aggregated Execution: {} {}", k, o)).to("oms.equity.order.aggregated-executed-quantity", equityOrderExecutedQuantityEventProduced);
-
-        return kStream;
     }
 
     private Long initialize() {
@@ -123,7 +90,7 @@ public class TradeExecutionAggregationService {
 
     @Bean
     public KStream<UUID, TradeExecutionAggregationEvent> aggregateExecutions(StreamsBuilder builder) {
-        final KGroupedStream<UUID, TradeExecutionEvent> tradeExecutionEventKGroupedStream = builder.stream("oms.equity.trade.executions", Consumed.with(Serdes.UUID(), tradeExecutionEventJsonSerde)).groupByKey();
+        final KGroupedStream<UUID, TradeExecutionWithFeesEvent> tradeExecutionEventKGroupedStream = builder.stream("oms.equity.trade.executionsfees", Consumed.with(Serdes.UUID(), tradeExecutionWithFeesEventJsonSerde)).groupByKey();
 
         KStream<UUID, TradeExecutionAggregationEvent> tradeExecutionAggregationEventKStream =
                 tradeExecutionEventKGroupedStream.cogroup(AGGREGATOR)
@@ -137,9 +104,29 @@ public class TradeExecutionAggregationService {
         return tradeExecutionAggregationEventKStream;
     }
 
-    private static final Aggregator<UUID, TradeExecutionEvent, TradeExecutionAggregationEvent> AGGREGATOR = (key, value, aggregate) -> {
-        aggregate.getTradeExecutionEvents().add(value);
+    private static final Aggregator<UUID, TradeExecutionWithFeesEvent, TradeExecutionAggregationEvent> AGGREGATOR = (key, value, aggregate) -> {
+        aggregate.getTradeExecutionEvents().add(getTradeExecutionEvent(value));
         aggregate.setId(key);
         return aggregate;
     };
+
+    private static TradeExecutionEvent getTradeExecutionEvent(TradeExecutionWithFeesEvent tradeExecutionWithFeesEvent) {
+        TradeExecutionEvent newTradeExecutionEvent = new TradeExecutionEvent();
+        newTradeExecutionEvent.setTradeType(tradeExecutionWithFeesEvent.getTradeType());
+        newTradeExecutionEvent.setExecutedPrice(tradeExecutionWithFeesEvent.getExecutedPrice());
+        newTradeExecutionEvent.setExecutedQuantity(tradeExecutionWithFeesEvent.getExecutedQuantity());
+        newTradeExecutionEvent.setExecutionDate(tradeExecutionWithFeesEvent.getExecutionDate());
+        newTradeExecutionEvent.setTradeId(tradeExecutionWithFeesEvent.getTradeId());
+        newTradeExecutionEvent.setCounterPartyTradingNo(tradeExecutionWithFeesEvent.getCounterPartyTradingNo());
+        newTradeExecutionEvent.setCustomerId(tradeExecutionWithFeesEvent.getCustomerId());
+        newTradeExecutionEvent.setMarketCenterOrderId(tradeExecutionWithFeesEvent.getMarketCenterOrderId());
+        newTradeExecutionEvent.setSide(tradeExecutionWithFeesEvent.getSide());
+        newTradeExecutionEvent.setId(tradeExecutionWithFeesEvent.getId());
+        newTradeExecutionEvent.setTicker(tradeExecutionWithFeesEvent.getTicker());
+        newTradeExecutionEvent.setStatus(tradeExecutionWithFeesEvent.getStatus());
+        newTradeExecutionEvent.setTradeDate(tradeExecutionWithFeesEvent.getTradeDate());
+        newTradeExecutionEvent.setTradingNo(tradeExecutionWithFeesEvent.getTradingNo());
+        newTradeExecutionEvent.setTransactionDescription(tradeExecutionWithFeesEvent.getTransactionDescription());
+        return newTradeExecutionEvent;
+    }
 }

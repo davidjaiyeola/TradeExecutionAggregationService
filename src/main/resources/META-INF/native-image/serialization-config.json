@@ -1,0 +1,20 @@
+[
+  {
+    "name": "com.africane.oms.events.TradeExecutionWithFeesEvent"
+  },
+  {
+    "name": "com.africane.oms.events.EquityOrderExecutedQuantityEvent"
+  },
+  {
+  "name": "com.africane.oms.events.TradeExecutionAggregationEvent"
+  },
+  {
+    "name": "com.africane.oms.events.EquityOrderExecutedQuantityEvent"
+  },
+  {
+    "name": "com.africane.oms.events.TradeExecutionEvent"
+  },
+  {
+    "name": "com.africane.oms.events.TradeExecutionFeeEvent"
+  }
+]

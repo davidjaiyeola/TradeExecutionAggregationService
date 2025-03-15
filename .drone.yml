@@ -1,0 +1,60 @@
+kind: pipeline
+name: default
+type: kubernetes
+
+trigger:
+  branch:
+    - main
+    - develop
+    - staging
+    - test
+
+resources:
+  requests:
+    cpu: 1024
+    memory: 1024MiB
+
+steps:
+  - name: create settings.xml
+    image: alpine:latest
+    environment:
+      REPO_ID: africane
+      REPO_USERNAME:
+        from_secret: ARTIFACTORY_USERNAME
+      REPO_PASSWORD:
+        from_secret: ARTIFACTORY_PASSWORD
+    commands:
+      - echo '<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd"><servers><server><id>'$REPO_ID'</id><username>'$REPO_USERNAME'</username><password>'$REPO_PASSWORD'</password></server></servers></settings>' > settings.xml
+  - name: build
+    image: vegardit/graalvm-maven:21.0.2
+    commands:
+      - mvn -s settings.xml -Pnative native:compile
+      - rm settings.xml
+  - name: send-tags-to-tags-file
+    image: node
+#    when:
+#      event:
+#        - push
+#        - pull_request
+    commands:
+      - echo -n "v1.0-$(date +'%Y%m%d%H%M')" > .tags
+#      - echo -n "v1.0-$(date +'%Y-%m-%d_%H-%M'), latest" > .tags
+
+  - name: build-tag-push-image
+    image: plugins/docker
+    settings:
+      dockerfile: Dockerfile
+      force_tag: true
+      username:
+        from_secret: REGISTRY_USERNAME
+      password:
+        from_secret: REGISTRY_PASSWORD
+#      auto_tag: false
+#      tags:
+#        - "v1.0.${DRONE_BUILD_FINISHED}"
+      repo: registry.africane.ng/africane/tradeexecutionaggregation-service
+      registry: registry.africane.ng
+    when:
+      event:
+        exclude:
+          - pull_request

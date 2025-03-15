@@ -1,4 +1,10 @@
+server:
+  port: 6080
 spring:
+  boot:
+    admin:
+      client:
+        url: 'http://localhost:9097'
   application:
     name: TradeExecutionAggregationService
   thread-executor: virtual
@@ -16,3 +22,19 @@ spring:
         default.value.serde: org.springframework.kafka.support.serializer.JsonSerde
         spring.json.trusted.packages: "*"
 
+management:
+  port: 8081
+  security:
+    enabled: false
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+        exclude: flyway,liquidbase,env
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: 'true'
+    shutdown:
+      enabled: true
