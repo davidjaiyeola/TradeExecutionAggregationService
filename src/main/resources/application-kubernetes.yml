@@ -2,7 +2,7 @@ spring:
   boot:
     admin:
       client:
-        url: ${ADMIN_CLIENT}
+        enabled: false
   kafka:
     streams:
       state-dir: ${STATE_DIR}
