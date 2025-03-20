@@ -9,11 +9,6 @@ trigger:
     - staging
     - test
 
-resources:
-  requests:
-    cpu: 1024
-    memory: 1024MiB
-
 steps:
   - name: create settings.xml
     image: alpine:latest
