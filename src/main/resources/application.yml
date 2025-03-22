@@ -1,5 +1,6 @@
 server:
   port: 6080
+streamGroupInstance: 'localhost'
 spring:
   boot:
     admin:

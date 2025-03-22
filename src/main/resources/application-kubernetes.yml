@@ -9,3 +9,5 @@ spring:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
 server:
   port: 8080
+
+streamGroupInstance: ${POD_IP}

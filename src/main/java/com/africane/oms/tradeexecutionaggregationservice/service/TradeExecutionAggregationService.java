@@ -1,6 +1,7 @@
 package com.africane.oms.tradeexecutionaggregationservice.service;
 
 import com.africane.oms.events.*;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.utils.Bytes;
@@ -34,6 +35,8 @@ public class TradeExecutionAggregationService {
     private String applicationId;
     @Value("${spring.kafka.streams.state-dir}")
     private String streamStateDirectory;
+    @Value("${streamGroupInstance}")
+    private String streamGroupInstance;
     private final Serde<Long> longSerde = Serdes.Long();
     private final Serde<UUID> uuidSerde = Serdes.UUID();
     Serde<TradeExecutionWithFeesEvent> tradeExecutionWithFeesEventJsonSerde = new JsonSerde<>( TradeExecutionWithFeesEvent.class );
@@ -67,6 +70,8 @@ public class TradeExecutionAggregationService {
         props.put(StreamsConfig.REPLICATION_FACTOR_CONFIG, 1);
         props.put(StreamsConfig.NUM_STANDBY_REPLICAS_CONFIG, 1);
         props.put(StreamsConfig.MAX_WARMUP_REPLICAS_CONFIG, 1);
+        props.put(StreamsConfig.consumerPrefix(ConsumerConfig.GROUP_INSTANCE_ID_CONFIG), streamGroupInstance);
+
         return new KafkaStreamsConfiguration(props);
     }
 
