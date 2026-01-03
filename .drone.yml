@@ -10,10 +10,10 @@ trigger:
     - test
 
 
-resources:
-  requests:
-    cpu: 2024
-    memory: 4024MiB
+#resources:
+#  requests:
+#    cpu: 2024
+#    memory: 4024MiB
 
 steps:
   - name: create settings.xml
