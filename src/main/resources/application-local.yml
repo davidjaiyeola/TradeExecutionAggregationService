@@ -1,0 +1,4 @@
+# Local profile - IntelliJ with Docker Desktop infrastructure
+spring:
+  kafka:
+    bootstrap-servers: localhost:9094

@@ -1,6 +1,7 @@
 package com.africane.oms.tradeexecutionaggregationservice.service;
 
 import com.africane.oms.events.*;
+import com.africane.oms.tradeexecutionaggregationservice.serde.OmsJsonSerde;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
@@ -17,7 +18,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.config.KafkaStreamsConfiguration;
 import org.springframework.kafka.config.StreamsBuilderFactoryBean;
-import org.springframework.kafka.support.serializer.JsonSerde;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -39,9 +39,9 @@ public class TradeExecutionAggregationService {
     private String streamGroupInstance;
     private final Serde<Long> longSerde = Serdes.Long();
     private final Serde<UUID> uuidSerde = Serdes.UUID();
-    Serde<TradeExecutionWithFeesEvent> tradeExecutionWithFeesEventJsonSerde = new JsonSerde<>( TradeExecutionWithFeesEvent.class );
-    Serde<EquityOrderExecutedQuantityEvent> equityOrderExecutedQuantityEventJsonSerde = new JsonSerde<>( EquityOrderExecutedQuantityEvent.class );
-    Serde<TradeExecutionAggregationEvent> tradeExecutionAggregationEventJsonSerde = new JsonSerde<>( TradeExecutionAggregationEvent.class );
+    Serde<TradeExecutionWithFeesEvent> tradeExecutionWithFeesEventJsonSerde = new OmsJsonSerde<>(TradeExecutionWithFeesEvent.class);
+    Serde<EquityOrderExecutedQuantityEvent> equityOrderExecutedQuantityEventJsonSerde = new OmsJsonSerde<>(EquityOrderExecutedQuantityEvent.class);
+    Serde<TradeExecutionAggregationEvent> tradeExecutionAggregationEventJsonSerde = new OmsJsonSerde<>(TradeExecutionAggregationEvent.class);
 
     private final Duration windowDuration = Duration.ofMillis(200);
     private static final String WINDOWED_QUANTITY_STORE_NAME = "windowed_executed_quantity_store";
@@ -62,11 +62,11 @@ public class TradeExecutionAggregationService {
         props.put(StreamsConfig.APPLICATION_ID_CONFIG, applicationId);
         props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, "org.apache.kafka.common.serialization.Serdes$UUIDSerde");
-        props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, "org.springframework.kafka.support.serializer.JsonSerde");
+        props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, "org.apache.kafka.common.serialization.Serdes$ByteArraySerde");
         props.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, 0);
         props.put(StreamsConfig.DEFAULT_DESERIALIZATION_EXCEPTION_HANDLER_CLASS_CONFIG, LogAndContinueExceptionHandler.class);
         props.put(StreamsConfig.STATE_DIR_CONFIG, streamStateDirectory);
-        props.put(StreamsConfig.TOPOLOGY_OPTIMIZATION, StreamsConfig.OPTIMIZE);
+        props.put("topology.optimization", "all");
         props.put(StreamsConfig.REPLICATION_FACTOR_CONFIG, 1);
         props.put(StreamsConfig.NUM_STANDBY_REPLICAS_CONFIG, 1);
         props.put(StreamsConfig.MAX_WARMUP_REPLICAS_CONFIG, 1);

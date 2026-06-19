@@ -2,21 +2,22 @@ server:
   port: 6080
 streamGroupInstance: 'localhost'
 spring:
-  boot:
-    admin:
-      client:
-        url: 'http://localhost:9097'
   application:
     name: TradeExecutionAggregationService
+  config:
+    import: "optional:consul:"
+  autoconfigure:
+    exclude:
+      - de.codecentric.boot.admin.client.config.SpringBootAdminClientAutoConfiguration
   thread-executor: virtual
   kafka:
-    bootstrap-servers: '127.0.0.1:29092,127.0.0.1:29093,127.0.0.1:29094'
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9094,localhost:9095,localhost:9096}
     producer:
       key-serializer: org.apache.kafka.common.serialization.UUIDSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
     streams:
       orders-topic: oms.equity.order
-      application-id: TradeExecutionAggregationService3
+      application-id: TradeExecutionAggregationService4
       state-dir: /tmp/kafka-streams/
       properties:
         default.key.serde: org.apache.kafka.common.serialization.Serdes$UUIDSerde
